@@ -155,7 +155,6 @@ async function submit(event: Event) {
         <a
           class="reach-email"
           :href="`mailto:${settings.email}`"
-          v-bind="linkTarget(`mailto:${settings.email}`)"
         >{{ settings.email }}</a>
       </aside>
     </div>

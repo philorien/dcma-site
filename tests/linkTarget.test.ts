@@ -7,10 +7,7 @@ describe('linkTarget', () => {
       target: '_blank',
       rel: 'noopener noreferrer',
     })
-    expect(linkTarget('mailto:a@b.co')).toEqual({
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    })
+    expect(linkTarget('mailto:a@b.co')).toEqual({})
   })
 
   it('leaves hash and relative links alone', () => {

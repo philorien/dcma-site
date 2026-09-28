@@ -28,7 +28,6 @@ useHead({
         <a
           class="btn btn-outline"
           :href="`mailto:${settings.email}`"
-          v-bind="linkTarget(`mailto:${settings.email}`)"
         >
           {{ copy.emailUsLabel }}
         </a>
