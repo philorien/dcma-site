@@ -15,7 +15,8 @@ export async function fetchCmsPageSlugs(): Promise<string[]> {
       `*[_type == "page" && defined(slug.current)].slug.current`,
     )
   }
-  catch {
+  catch(error) {
+    console.error('Failed to fetch CMS routes for sitemap:', error)
     return []
   }
 }
