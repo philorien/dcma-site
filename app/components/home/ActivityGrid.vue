@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Card } from '~/types/content'
-defineProps<{ heading: string; activities: Card[] }>()
+defineProps<{ heading: string; activities: Card[]; email: string; }>()
 </script>
 
 <template>
@@ -22,7 +22,7 @@ defineProps<{ heading: string; activities: Card[] }>()
     <br></br>
     <hr></hr>
     <br></br>
-    <a href="`mailto:${settings.email}`" class="btn">Contact us!</a>
+    <a :href="`mailto:${email}`" class="btn">Contact us!</a>
   </section>
 </template>
 

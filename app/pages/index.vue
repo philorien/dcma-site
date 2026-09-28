@@ -42,7 +42,7 @@ function formatDate(iso: string) {
         <p class="body">{{ page.missionBody }}</p>
       </div>
     </section>
-    <HomeActivityGrid :heading="page.activitiesHeading" :activities="page.activities" />
+    <HomeActivityGrid :heading="page.activitiesHeading" :activities="page.activities" :email="settings.email" />
 
     <section v-if="latestUpdate" class="latest-update" aria-labelledby="latest-update-heading">
       <div class="latest-update-inner">
