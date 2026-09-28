@@ -4,8 +4,8 @@
 packages: []
 
 allowBuilds:
-  '@parcel/watcher': false
-  esbuild: false
+  '@parcel/watcher': true
+  esbuild: true
 
 overrides:
   react: 19.2.8
