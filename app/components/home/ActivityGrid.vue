@@ -22,7 +22,7 @@ defineProps<{ heading: string; activities: Card[] }>()
     <br></br>
     <hr></hr>
     <br></br>
-    <a href="https://discord.gg/dpRZGJSmSb" class="btn">Join us in Discord!</a>
+    <a href="`mailto:${settings.email}`" class="btn">Contact us!</a>
   </section>
 </template>
 
