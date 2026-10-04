@@ -360,13 +360,19 @@ nav > a:focus-visible,
     gap: 0.75rem;
   }
 
+  /* Let the org name wrap instead of pushing the actions past the edge */
+  .brand {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
   .header-actions {
     margin-left: auto;
     gap: 0.4rem;
   }
 
   .join {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.85rem;
     font-size: 0.8rem;
   }
 
