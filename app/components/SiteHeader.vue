@@ -5,12 +5,103 @@ defineProps<{ settings: SiteSettings }>()
 function isInternal(href: string) {
   return href.startsWith('/')
 }
+
+// Mobile nav drawer. Below the breakpoint the nav is an off-canvas panel that
+// is hidden (visibility) until opened; above it these refs are inert.
+const MOBILE_QUERY = '(max-width: 768px)'
+const FOCUSABLE = 'a[href], button:not([disabled])'
+
+const open = ref(false)
+const toggleEl = ref<HTMLButtonElement | null>(null)
+const panelEl = ref<HTMLElement | null>(null)
+const closeEl = ref<HTMLButtonElement | null>(null)
+
+function openMenu() {
+  open.value = true
+  nextTick(() => closeEl.value?.focus())
+}
+
+function closeMenu(restoreFocus = true) {
+  if (!open.value) return
+  open.value = false
+  if (restoreFocus) toggleEl.value?.focus()
+}
+
+function onDocumentKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') closeMenu()
+}
+
+// Keep Tab / Shift+Tab inside the open panel
+function onPanelKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Tab' || !open.value || !panelEl.value) return
+  const items = Array.from(panelEl.value.querySelectorAll<HTMLElement>(FOCUSABLE))
+  if (!items.length) return
+  const first = items[0]!
+  const last = items[items.length - 1]!
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault()
+    first.focus()
+  }
+}
+
+// Any link tapped inside the panel (including same-page and mailto links)
+// dismisses it; a route-change watcher alone wouldn't cover those.
+function onPanelClick(e: MouseEvent) {
+  if ((e.target as HTMLElement).closest('a')) closeMenu(false)
+}
+
+watch(open, (isOpen) => {
+  document.body.style.overflow = isOpen ? 'hidden' : ''
+  if (isOpen) document.addEventListener('keydown', onDocumentKeydown)
+  else document.removeEventListener('keydown', onDocumentKeydown)
+})
+
+// If the viewport grows past the breakpoint while open (rotation, resize),
+// close so scroll lock and the trap don't linger.
+let mql: MediaQueryList | undefined
+function onBreakpointChange(e: MediaQueryListEvent) {
+  if (!e.matches) closeMenu(false)
+}
+
+onMounted(() => {
+  mql = window.matchMedia(MOBILE_QUERY)
+  mql.addEventListener('change', onBreakpointChange)
+})
+
+onBeforeUnmount(() => {
+  mql?.removeEventListener('change', onBreakpointChange)
+  document.removeEventListener('keydown', onDocumentKeydown)
+  document.body.style.overflow = ''
+})
 </script>
 
 <template>
   <header class="site-header">
     <NuxtLink to="/" class="brand">{{ settings.orgName }}</NuxtLink>
 
+    <div
+      id="site-nav-panel"
+      ref="panelEl"
+      class="nav-panel"
+      :class="{ open }"
+      @keydown="onPanelKeydown"
+      @click="onPanelClick"
+    >
+      <button
+        ref="closeEl"
+        type="button"
+        class="nav-close"
+        aria-label="Close menu"
+        @click="closeMenu()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="nav-icon">
+          <line x1="5" y1="5" x2="19" y2="19" />
+          <line x1="19" y1="5" x2="5" y2="19" />
+        </svg>
+      </button>
     <nav :aria-label="settings.navAriaLabel">
       <template v-for="link in settings.navLinks" :key="link.href ?? link.label">
         <!-- Top-level item with dropdown children -->
@@ -40,6 +131,8 @@ function isInternal(href: string) {
         <a v-else-if="link.href" :href="link.href" v-bind="linkTarget(link.href)">{{ link.label }}</a>
       </template>
     </nav>
+    </div>
+    <div class="nav-scrim" :class="{ open }" aria-hidden="true" @click="closeMenu()" />
 
     <div class="header-actions">
       <ClientOnly>
@@ -53,6 +146,21 @@ function isInternal(href: string) {
         :href="settings.joinCta.href"
         v-bind="linkTarget(settings.joinCta.href)"
       >{{ settings.joinCta.label }}</a>
+      <button
+        ref="toggleEl"
+        type="button"
+        class="nav-toggle"
+        aria-label="Menu"
+        aria-controls="site-nav-panel"
+        :aria-expanded="open"
+        @click="open ? closeMenu() : openMenu()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="nav-icon">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
+      </button>
     </div>
   </header>
 </template>
@@ -225,20 +333,36 @@ nav > a:focus-visible,
   white-space: nowrap;
 }
 
+/* Desktop: the panel wrapper is layout-transparent so <nav> stays a direct
+   flex child of the header, and the mobile-only controls are hidden. */
+.nav-panel {
+  display: contents;
+}
+
+.nav-close,
+.nav-toggle,
+.nav-scrim {
+  display: none;
+}
+
+.nav-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+}
+
 @media (max-width: 768px) {
   .site-header {
-    flex-wrap: wrap;
     padding: 1rem 1.25rem;
     gap: 0.75rem;
   }
 
-  .brand {
-    order: 1;
-  }
-
   .header-actions {
-    order: 2;
     margin-left: auto;
+    gap: 0.4rem;
   }
 
   .join {
@@ -246,35 +370,129 @@ nav > a:focus-visible,
     font-size: 0.8rem;
   }
 
-  nav {
-    order: 3;
-    flex-basis: 100%;
+  .nav-toggle,
+  .nav-close {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: 2px;
+    color: var(--slate);
+    cursor: pointer;
   }
 
-  /* On mobile, show dropdowns stacked (always visible) */
-  .dropdown {
-    flex-basis: 100%;
+  .nav-toggle:hover,
+  .nav-close:hover {
+    color: var(--navy);
+    border-color: var(--navy);
+  }
+
+  .nav-toggle:focus-visible,
+  .nav-close:focus-visible {
+    outline: 3px solid var(--navy);
+    outline-offset: 2px;
+  }
+
+  /* Off-canvas drawer. visibility:hidden while closed removes it from the tab
+     order and the accessibility tree; the delay lets the slide-out finish. */
+  .nav-panel {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    width: min(20rem, 85vw);
+    padding: 1rem 1.25rem 2rem;
+    overflow-y: auto;
+    background: var(--surface-raised);
+    border-left: 1px solid var(--hairline);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+  }
+
+  .nav-panel.open {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease, visibility 0s;
+  }
+
+  .nav-close {
+    align-self: flex-end;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: rgb(0 0 0 / 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+  }
+
+  .nav-scrim.open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease, visibility 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-panel,
+    .nav-panel.open,
+    .nav-scrim,
+    .nav-scrim.open {
+      transition: none;
+    }
+  }
+
+  nav {
+    flex: none;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+  }
+
+  nav > a,
+  .dropdown-trigger {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  /* Dropdown children are always shown, stacked under their parent */
+  .dropdown {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .dropdown-menu {
     display: block;
     position: static;
+    min-width: 0;
     transform: none;
     box-shadow: none;
     border: none;
     background: transparent;
-    padding: 0;
-    text-align: center;
+    padding: 0 0 0.5rem 1rem;
   }
 
   .dropdown-menu li a {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.8rem;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.85rem;
     color: var(--slate);
+    white-space: normal;
   }
 
   .dropdown-menu li a:hover {
