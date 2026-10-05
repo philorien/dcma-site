@@ -6,7 +6,7 @@ Operational reference for how this site ships. Supersedes the old `CUTOVER.md`.
 
 - **App host:** Vercel project `dcma-site` (team `lorienwebs-projects`). Connected via Vercel's Git integration — **every push to `main` triggers a production build.** No `vercel.json`, no build workflow in the repo; build settings live in the Vercel dashboard.
 - **Public domain:** `doorcountymutualaid.org` / `www` still points at **Wix** — the DNS cutover below has NOT happened. The Nuxt app is only reachable at the protected `dcma-site-*.vercel.app` URL (Vercel deployment protection / SSO).
-- **Content:** content routes use ISR (`routeRules: { …: { isr: 60 } }` in `nuxt.config.ts`), so a Studio publish shows up on the live site within ~a minute — no rebuild needed. It must be `isr`, not `swr` — this Nitro version's Vercel preset silently ignores a top-level `swr` route rule. Sanity Studio is hosted at `dcma.sanity.studio` and deployed separately (`cd studio && sanity deploy` — studio is npm-managed, not part of the pnpm workspace).
+- **Content:** content routes use ISR (`routeRules: { …: { isr: 60 } }` in `nuxt.config.ts`), so a Studio publish shows up on the live site within ~a minute — no rebuild needed. It must be `isr`, not `swr` — this Nitro version's Vercel preset silently ignores a top-level `swr` route rule. Sanity Studio is hosted at `dcma.sanity.studio` and deployed separately from the Vercel app: automatically by the `Deploy Studio` GitHub Action on pushes to `main` that touch `studio/**` (needs the `SANITY_DEPLOY_TOKEN` repo secret, see the README), or by hand with `cd studio && sanity deploy` — studio is npm-managed, not part of the pnpm workspace.
 
 ## Triggering a deploy
 

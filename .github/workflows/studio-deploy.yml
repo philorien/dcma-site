@@ -1,0 +1,61 @@
+name: Deploy Studio
+
+# Builds and deploys the hosted Sanity Studio (dcma.sanity.studio) and uploads
+# its schema whenever studio/ changes on main. Requires the SANITY_DEPLOY_TOKEN
+# repo secret (see README, "Deploy the Studio").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/**'
+      - '.github/workflows/studio-deploy.yml'
+  workflow_dispatch:
+
+# Never cancel a deploy mid-flight; queue the next one behind it.
+concurrency:
+  group: studio-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: sanity deploy
+    runs-on: ubuntu-latest
+    # Cold-cache builds have taken up to ~11 minutes
+    timeout-minutes: 25
+
+    defaults:
+      run:
+        working-directory: studio
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deploy token is configured
+        env:
+          SANITY_DEPLOY_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$SANITY_DEPLOY_TOKEN" ]; then
+            echo "::error::SANITY_DEPLOY_TOKEN is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      # studio/ is managed with npm, separately from the pnpm workspace at the repo root
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # --yes: no prompts. --schema-required: without it a failed schema upload
+      # only warns and the step still exits 0.
+      - name: Deploy Studio
+        run: npx sanity deploy --yes --schema-required
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}

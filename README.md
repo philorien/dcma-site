@@ -224,7 +224,16 @@ npm run deploy     # build + upload the hosted Studio at dcma.sanity.studio
 
 `npm run deploy` both builds the Studio and uploads the schema manifest. First run needs `sanity login` (browser). If it hangs on "Verifying local content" or errors on `uploadSchema`, bump `sanity` / `@sanity/cli` in `studio/package.json` and reinstall — see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-Automating this in CI is [issue #42](https://github.com/Solus90/dcma-site/issues/42).
+#### Automatic deploys (CI)
+
+Pushes to `main` that touch `studio/**` run [`studio-deploy.yml`](.github/workflows/studio-deploy.yml), which does the same `sanity deploy` (build, upload, schema) without a local login. PRs that touch `studio/**` run [`studio-check.yml`](.github/workflows/studio-check.yml), which runs `sanity schemas validate`. The manual steps above still work, and the deploy workflow can also be run by hand from the **Actions** tab.
+
+One-time setup for the deploy workflow:
+
+1. At [sanity.io/manage](https://www.sanity.io/manage) → project **Door County Mutual Aid** → **API** → **Tokens**, create a token with permission to deploy the Studio.
+2. In GitHub: **Settings** → **Secrets and variables** → **Actions** → new repository secret named `SANITY_DEPLOY_TOKEN`.
+
+The workflow fails fast with a clear message if the secret is missing, and it passes `--schema-required` so a failed schema upload fails the run instead of only warning.
 
 ### Add a new document type or field
 

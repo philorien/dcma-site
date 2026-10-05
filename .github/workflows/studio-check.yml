@@ -1,0 +1,38 @@
+name: Studio check
+
+# Validates the Sanity schema on PRs that touch studio/. Needs no secrets, so it
+# also runs on PRs from forks.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'studio/**'
+      - '.github/workflows/studio-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  schema:
+    name: Validate schema
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: studio
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate schema
+        run: npx sanity schemas validate --level error
