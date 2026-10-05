@@ -288,6 +288,7 @@ assets/stock/         Stock photography for seed script
 | `Missing SANITY_TOKEN` when seeding | Add token to `.env` |
 | Contact form returns 500 | Check write token and `NUXT_SANITY_PROJECT_ID` on the server |
 | New CMS page missing from the sitemap | Rebuild — slugs are collected at build time in `nuxt.config.ts`. The page itself works without a rebuild. |
+| Studio CI (`Studio check` or `Deploy Studio`) fails with `Tsconfig not found .../.nuxt/tsconfig.app.json` | The Sanity CLI follows the repo-root `tsconfig.json`, which points at generated `.nuxt/tsconfig.*.json` files that exist only after `nuxt prepare`. On a clean checkout they're missing. The workflows run `pnpm install` first (its `postinstall` runs `nuxt prepare`); keep that step ahead of any `sanity` command. Locally: `pnpm exec nuxt prepare` |
 | Schema field missing in Studio | `cd studio && npm run deploy` (schema changes need a Studio redeploy) |
 | Reserved slug error on new page | Choose a slug other than `about`, `full-hearts-fridge`, `about-us`, `what-is-mutual-aid`, `updates`, or `api` |
 | `pnpm install` didn't set up the Studio | It won't — run `npm --prefix studio install` separately |
