@@ -230,10 +230,10 @@ Pushes to `main` that touch `studio/**` run [`studio-deploy.yml`](.github/workfl
 
 One-time setup for the deploy workflow:
 
-1. At [sanity.io/manage](https://www.sanity.io/manage) → project **Door County Mutual Aid** → **API** → **Tokens**, create a token with permission to deploy the Studio.
+1. Create a token with the `deploy-studio` role (least privilege: it can deploy the Studio and nothing else), either at [sanity.io/manage](https://www.sanity.io/manage) → project **Door County Mutual Aid** → **API** → **Tokens**, or from `studio/` with `npx sanity tokens create "GitHub Actions - Studio deploy" --role=deploy-studio --expires-at <date>`.
 2. In GitHub: **Settings** → **Secrets and variables** → **Actions** → new repository secret named `SANITY_DEPLOY_TOKEN`.
 
-The workflow fails fast with a clear message if the secret is missing, and it passes `--schema-required` so a failed schema upload fails the run instead of only warning.
+The current token expires **2027-10-05**; when it does, the deploy workflow starts failing with an auth error, so create a new token and update the secret before then. The workflow fails fast with a clear message if the secret is missing, and it passes `--schema-required` so a failed schema upload fails the run instead of only warning.
 
 ### Add a new document type or field
 
