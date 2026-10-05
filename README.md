@@ -224,7 +224,7 @@ npm run deploy     # build + upload the hosted Studio at dcma.sanity.studio
 
 `npm run deploy` both builds the Studio and uploads the schema manifest. First run needs `sanity login` (browser). If it hangs on "Verifying local content" or errors on `uploadSchema`, bump `sanity` / `@sanity/cli` in `studio/package.json` and reinstall — see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-Automating this in CI is [issue #42](https://github.com/Solus90/dcma-site/issues/42).
+Automating this in CI is [issue #42](https://github.com/philorien/dcma-site/issues/42).
 
 ### Add a new document type or field
 
