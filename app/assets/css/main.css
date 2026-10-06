@@ -67,6 +67,13 @@
 
 * { box-sizing: border-box; }
 
+/* Keep in-page anchors (skip link, #find-fridge, ...) clear of the sticky
+   mobile header. Header is ~77px tall, ~82px at 320px when the brand wraps to
+   3 lines; 6rem (96px) leaves room to spare. */
+@media (max-width: 768px) {
+  html { scroll-padding-top: 6rem; }
+}
+
 body {
   background: var(--cream);
   color: var(--slate);

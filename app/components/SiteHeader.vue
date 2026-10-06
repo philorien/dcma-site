@@ -355,7 +355,15 @@ nav > a:focus-visible,
 }
 
 @media (max-width: 768px) {
+  /* Sticky header. Keep it free of filter / backdrop-filter / transform: any of
+     them would make the header the containing block for the fixed drawer. The
+     z-index sits above the fridge page's bottom action bar (50), and the drawer
+     and scrim stack inside this context. */
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: var(--cream);
     padding: 1rem 1.25rem;
     gap: 0.75rem;
   }
