@@ -224,7 +224,16 @@ npm run deploy     # build + upload the hosted Studio at dcma.sanity.studio
 
 `npm run deploy` both builds the Studio and uploads the schema manifest. First run needs `sanity login` (browser). If it hangs on "Verifying local content" or errors on `uploadSchema`, bump `sanity` / `@sanity/cli` in `studio/package.json` and reinstall — see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-Automating this in CI is [issue #42](https://github.com/philorien/dcma-site/issues/42).
+#### Automatic deploys (CI)
+
+Pushes to `main` that touch `studio/**` run [`studio-deploy.yml`](.github/workflows/studio-deploy.yml), which does the same `sanity deploy` (build, upload, schema) without a local login. PRs that touch `studio/**` run [`studio-check.yml`](.github/workflows/studio-check.yml), which runs `sanity schemas validate`. The manual steps above still work, and the deploy workflow can also be run by hand from the **Actions** tab.
+
+One-time setup for the deploy workflow:
+
+1. Create a token with the `deploy-studio` role (least privilege: it can deploy the Studio and nothing else), either at [sanity.io/manage](https://www.sanity.io/manage) → project **Door County Mutual Aid** → **API** → **Tokens**, or from `studio/` with `npx sanity tokens create "GitHub Actions - Studio deploy" --role=deploy-studio --expires-at <date>`.
+2. In GitHub: **Settings** → **Secrets and variables** → **Actions** → new repository secret named `SANITY_DEPLOY_TOKEN`.
+
+The current token expires **2027-10-05**; when it does, the deploy workflow starts failing with an auth error, so create a new token and update the secret before then. The workflow fails fast with a clear message if the secret is missing, and it passes `--schema-required` so a failed schema upload fails the run instead of only warning.
 
 ### Add a new document type or field
 
@@ -271,6 +280,44 @@ assets/stock/         Stock photography for seed script
 
 ---
 
+## Ownership and handover
+
+Where everything lives, so the project survives a change of maintainer. No secret values are recorded here.
+
+| Thing | Where | Notes |
+| --- | --- | --- |
+| Code | GitHub `philorien/dcma-site` | Add a second admin under **Settings** → **Collaborators** |
+| Site hosting | Vercel project `dcma-site`, team `lorienwebs-projects` | Env vars live there; see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the deploy flow and the not-yet-done DNS cutover from Wix |
+| CMS content and members | Sanity project `1qb86j9s` (Door County Mutual Aid), dataset `production` | Manage members at [sanity.io/manage](https://www.sanity.io/manage) → **Members**. A Sanity account belongs to its sign-in method (GitHub, Google, or email), so people must log in the way they were invited |
+| Hosted Studio | `dcma.sanity.studio` | Deployed by the `Deploy Studio` GitHub Action (see "Automatic deploys (CI)") or by hand |
+| Studio deploy token | Sanity API token "GitHub Actions - Studio deploy" (`deploy-studio` role), stored as the GitHub repo secret `SANITY_DEPLOY_TOKEN` | **Expires 2027-10-05.** Created from the original maintainer's Sanity login, which signs in with GitHub |
+| Contact form write token | Vercel env var `NUXT_SANITY_WRITE_TOKEN` | See "Configure the contact form API" |
+
+### Rotate the Studio deploy token
+
+Do this before the expiry date, or any time the token may have leaked or its owner leaves. You need to be a Sanity project administrator and a GitHub repo admin.
+
+```bash
+cd studio
+npx sanity login --provider github      # or the provider your account uses
+npx sanity tokens list                  # find the old token's id
+# Create the new token and store it as the repo secret without printing it:
+npx sanity tokens create "GitHub Actions - Studio deploy" --role=deploy-studio --expires-at 2028-01-01 --json --yes
+gh secret set SANITY_DEPLOY_TOKEN       # paste the new token's "token" value, or pipe it in
+npx sanity tokens delete <old-token-id> --yes
+```
+
+Then run **Deploy Studio** from the **Actions** tab to confirm the new token works, and update the expiry date in this README.
+
+### Handing the project to someone else
+
+1. Add the new maintainer as a GitHub repo admin, a Sanity project **Administrator**, and a member of the Vercel team.
+2. Rotate the deploy token (above) and the contact form write token so no credential depends on the person leaving. It has not been verified whether Sanity ties a token's validity to the member who created it, so rotating is the safe choice.
+3. Remove the old maintainer from all three.
+4. Check `npx sanity tokens list` and prune anything unrecognised.
+
+---
+
 ## Troubleshooting
 
 | Problem | Likely fix |
@@ -279,6 +326,13 @@ assets/stock/         Stock photography for seed script
 | `Missing SANITY_TOKEN` when seeding | Add token to `.env` |
 | Contact form returns 500 | Check write token and `NUXT_SANITY_PROJECT_ID` on the server |
 | New CMS page missing from the sitemap | Rebuild — slugs are collected at build time in `nuxt.config.ts`. The page itself works without a rebuild. |
+| Studio CI (`Studio check` or `Deploy Studio`) fails with `Tsconfig not found .../.nuxt/tsconfig.app.json` | The Sanity CLI follows the repo-root `tsconfig.json`, which points at generated `.nuxt/tsconfig.*.json` files that exist only after `nuxt prepare`. On a clean checkout they're missing. The workflows run `pnpm install` first (its `postinstall` runs `nuxt prepare`); keep that step ahead of any `sanity` command. Locally: `pnpm exec nuxt prepare` |
+| Unsure whether it's `sanity schema validate` or `sanity schemas validate` | Both work on CLI 8.x (the singular is an alias). The canonical name is plural, `npx sanity schemas validate --level error`, and that's what CI runs |
+| `sanity login` fails with `Multiple login providers available` | Non-interactive shells (scripts, `!` commands in Claude Code) can't show the provider picker. Pass one: `npx sanity login --provider github`. Use the provider your Sanity account was created with; a different one signs you in as a separate, empty account |
+| `Unauthorized - Session not found` from `sanity deploy` in CI | `SANITY_DEPLOY_TOKEN` is wrong, revoked, or expired. See "Rotate the Studio deploy token" below |
+| `You must login first` from `sanity deploy` in CI | The secret is empty or the env var isn't passed. The deploy workflow checks for this first and fails with a clear message |
+| `Invalid role "..."` when creating a token | The CLI lists the roles this project allows in the error. As of 2026-10-05: `blueprints-deployer`, `viewer`, `access-manager`, `deploy-studio`, `editor`. Use `deploy-studio` for CI |
+| Studio deploy "succeeds" but the schema didn't update | `sanity deploy` only warns on a failed schema upload unless you pass `--schema-required` (CI does; keep it) |
 | Schema field missing in Studio | `cd studio && npm run deploy` (schema changes need a Studio redeploy) |
 | Reserved slug error on new page | Choose a slug other than `about`, `full-hearts-fridge`, `about-us`, `what-is-mutual-aid`, `updates`, or `api` |
 | `pnpm install` didn't set up the Studio | It won't — run `npm --prefix studio install` separately |
