@@ -77,3 +77,22 @@ describe('dark-mode callout and badge fills (review of #87)', () => {
     expect(rule![1]).toMatch(/background:\s*var\(--block\)/)
   })
 })
+
+describe('callout and badge text contrast on --block (#77)', () => {
+  it.each([
+    ['app/pages/index.vue', '.badge'],
+    ['app/pages/about.vue', '.callout'],
+  ])('%s %s text meets 4.5:1 on --block in both dark modes', (file, selector) => {
+    const source = readFileSync(resolve(__dirname, '..', file), 'utf8')
+    const escaped = selector.replace('.', '\.')
+    const rule = source.match(new RegExp(`${escaped}\s*\{([^}]*)\}`))
+    expect(rule, `missing ${selector} rule`).not.toBeNull()
+    const colour = rule![1].match(/color:\s*([^;]+);/)
+    expect(colour, `missing colour in ${selector}`).not.toBeNull()
+    for (const block of [systemDark, toggleDark]) {
+      const text = colour![1].trim().replace(/^var\((--[\w-]+)\)$/, (_m, name) => resolveToken(name, block, root))
+      const fill = resolveToken('--block', block, root)
+      expect(contrast(text, fill)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST)
+    }
+  })
+})

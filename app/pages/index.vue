@@ -120,7 +120,7 @@ function formatDate(iso: string) {
 
 .badge {
   background: var(--block);
-  color: var(--on-block);
+  color: #ffffff;
   padding: 0.2rem 0.5rem;
   font-weight: 700;
   font-size: 0.7rem;
