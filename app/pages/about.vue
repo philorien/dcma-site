@@ -239,7 +239,7 @@ useSeoMeta({
 .callout {
   margin: 0 0 1.25rem;
   padding: 1.25rem 1.5rem;
-  background: var(--navy);
+  background: var(--block);
   color: var(--on-block);
 }
 

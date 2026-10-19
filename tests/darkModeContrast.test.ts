@@ -64,3 +64,16 @@ describe('dark-mode primary button contrast (issue #78)', () => {
     expect(resolveToken('--on-block', systemDark, root)).toBe(resolveToken('--on-block', toggleDark, root))
   })
 })
+
+describe('dark-mode callout and badge fills (review of #87)', () => {
+  it.each([
+    ['app/pages/index.vue', '.badge'],
+    ['app/pages/about.vue', '.callout'],
+  ])('%s %s fills with --block, the token meant for callouts', (file, selector) => {
+    const source = readFileSync(resolve(__dirname, '..', file), 'utf8')
+    const escaped = selector.replace('.', '\\.')
+    const rule = source.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))
+    expect(rule, `missing ${selector} rule`).not.toBeNull()
+    expect(rule![1]).toMatch(/background:\s*var\(--block\)/)
+  })
+})
