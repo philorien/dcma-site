@@ -71,7 +71,7 @@ describe('dark-mode callout and badge fills (review of #87)', () => {
     ['app/pages/about.vue', '.callout'],
   ])('%s %s fills with --block, the token meant for callouts', (file, selector) => {
     const source = readFileSync(resolve(__dirname, '..', file), 'utf8')
-    const escaped = selector.replace('.', '\\.')
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const rule = source.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))
     expect(rule, `missing ${selector} rule`).not.toBeNull()
     expect(rule![1]).toMatch(/background:\s*var\(--block\)/)
@@ -84,8 +84,8 @@ describe('callout and badge text contrast on --block (#77)', () => {
     ['app/pages/about.vue', '.callout'],
   ])('%s %s text meets 4.5:1 on --block in both dark modes', (file, selector) => {
     const source = readFileSync(resolve(__dirname, '..', file), 'utf8')
-    const escaped = selector.replace('.', '\.')
-    const rule = source.match(new RegExp(`${escaped}\s*\{([^}]*)\}`))
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const rule = source.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))
     expect(rule, `missing ${selector} rule`).not.toBeNull()
     const colour = rule![1].match(/color:\s*([^;]+);/)
     expect(colour, `missing colour in ${selector}`).not.toBeNull()
