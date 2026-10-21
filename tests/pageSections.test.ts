@@ -9,7 +9,7 @@ import FridgeClosingCta from '../app/components/fridge/FridgeClosingCta.vue'
 import ContactSection from '../app/components/ContactSection.vue'
 import { makeCard, makeSettings } from './fixtures'
 import { DEFAULT_CONTACT_FORM } from '../app/utils/contentDefaults'
-import type { CardGridSection, PageSection } from '../app/types/content'
+import type { PageSection } from '../app/types/content'
 
 // This is the [slug].vue / projects/index.vue rendering path: sections come
 // straight from Sanity as untyped `_type`-tagged blobs, and this component's
@@ -90,68 +90,57 @@ describe('PageSections', () => {
   })
 })
 
-describe('Card grid buttons', () => {
-  const grid = (buttons?: CardGridSection['buttons']): PageSection => ({
-    _key: 'grid', _type: 'cardGridSection', buttons,
-    cards: [
-      makeCard({ _key: 'page', title: 'Fridge', cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' } }),
-      makeCard({ _key: 'site', title: 'Partner', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
-      makeCard({ _key: 'mail', title: 'Volunteer', cta: { label: 'Get involved', href: 'mailto:a@b.co' } }),
-    ],
-  })
-  const mountGrid = (buttons?: CardGridSection['buttons']) => mount(PageSections, {
-    props: { sections: [grid(buttons)], settings: makeSettings(), contactForm: DEFAULT_CONTACT_FORM },
+describe('Card grid links and contact button', () => {
+  const cards = [
+    makeCard({ _key: 'page', cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' } }),
+    makeCard({ _key: 'site', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
+    makeCard({ _key: 'mail', cta: { label: 'Request support', href: 'mailto:a@b.co?subject=Support' } }),
+  ]
+  const mountGrid = (showContactButton?: boolean | null) => mount(PageSections, {
+    props: {
+      sections: [{ _key: 'grid', _type: 'cardGridSection', showContactButton, cards } as PageSection],
+      settings: makeSettings(),
+      contactForm: DEFAULT_CONTACT_FORM,
+    },
     global: {
       components: { HomeActivityGrid },
-      stubs: { NuxtLink: { template: '<a><slot /></a>' } },
+      // Renders `to` as href so tests can assert where card links go.
+      stubs: { NuxtLink: { props: ['to'], template: '<a :href="to"><slot /></a>' } },
     },
   })
-  const labels = (w: ReturnType<typeof mountGrid>) => w.findAll('.card-link').map((a) => a.text())
 
-  it('defaults to site-page card links plus the contact button when unset', () => {
-    const w = mountGrid(undefined)
+  it('shows every card link, wherever it goes, on the /projects rendering path', () => {
+    const links = mountGrid(true).findAll('.card-link')
 
-    expect(labels(w)).toEqual(['LEARN MORE'])
-    expect(w.find('a.btn').text()).toBe('Contact us!')
+    expect(links.map((a) => a.attributes('href'))).toEqual([
+      '/projects/full-hearts-fridge',
+      'https://partner.example/',
+      'mailto:a@b.co?subject=Support',
+    ])
   })
 
-  it('"cards" shows website links in a new tab and drops the contact button', () => {
-    const w = mountGrid('cards')
+  it('opens website and email links in a new tab and says so to screen readers', () => {
+    const [page, site, mail] = mountGrid(true).findAll('.card-link')
 
-    expect(labels(w)).toEqual(['LEARN MORE', 'Visit website'])
-    expect(w.find('a[href="https://partner.example/"]').attributes('target')).toBe('_blank')
-    expect(w.find('a.btn').exists()).toBe(false)
+    expect(page.attributes('target')).toBeUndefined()
+    for (const link of [site, mail]) {
+      expect(link.attributes('target')).toBe('_blank')
+      expect(link.attributes('rel')).toBe('noopener noreferrer')
+      expect(link.find('.sr-only').text()).toBe('(opens in a new tab)')
+    }
   })
 
-  it('"none" shows no buttons at all', () => {
-    const w = mountGrid('none')
+  // Grids saved before the field existed have no value and keep the button.
+  it.each([
+    { showContactButton: true, shown: true },
+    { showContactButton: undefined, shown: true },
+    { showContactButton: null, shown: true },
+    { showContactButton: false, shown: false },
+  ])('showContactButton $showContactButton → contact button shown: $shown', ({ showContactButton, shown }) => {
+    const w = mountGrid(showContactButton)
 
-    expect(labels(w)).toEqual([])
-    expect(w.find('a.btn').exists()).toBe(false)
-  })
-})
-
-describe('Card grid links on CMS pages', () => {
-  it('links cards to site pages on the /projects rendering path', () => {
-    const w = mount(PageSections, {
-      props: {
-        sections: [{
-          _key: 'grid', _type: 'cardGridSection',
-          cards: [
-            makeCard({ _key: 'page', cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' } }),
-            makeCard({ _key: 'site', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
-          ],
-        }],
-        settings: makeSettings(),
-        contactForm: DEFAULT_CONTACT_FORM,
-      },
-      global: {
-        components: { HomeActivityGrid },
-        stubs: { NuxtLink: { props: ['to'], template: '<a :href="to"><slot /></a>' } },
-      },
-    })
-
-    const links = w.findAll('.card-link')
-    expect(links.map((a) => a.attributes('href'))).toEqual(['/projects/full-hearts-fridge'])
+    expect(w.find('a.btn').exists()).toBe(shown)
+    // Card links never depend on the switch, so the fridge link can't be hidden by it (#85).
+    expect(w.findAll('.card-link')).toHaveLength(3)
   })
 })

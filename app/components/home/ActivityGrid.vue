@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import type { Card, CardGridButtons } from '~/types/content'
+import type { Card } from '~/types/content'
+import { cardLink } from '~/utils/cardLink'
 const headingId = useId()
-const props = defineProps<{ heading?: string; activities: Card[]; email: string; buttons?: CardGridButtons }>()
-// Content saved before the field existed has no value; treat it as the default.
-const mode = computed(() => props.buttons ?? 'contact')
-const isWebsite = (href?: string) => /^https?:\/\//i.test(href ?? '')
+const props = defineProps<{ heading?: string; activities: Card[]; email: string; showContactButton?: boolean | null }>()
+const cards = computed(() => props.activities.map((card) => ({ card, link: cardLink(card) })))
 </script>
 
 <template>
   <section class="grid" :aria-labelledby="heading ? headingId : undefined">
     <h2 v-if="heading" :id="headingId" class="display">{{ heading }}</h2>
     <div class="items">
-      <article v-for="a in activities" :key="a._key">
+      <article v-for="{ card: a, link } in cards" :key="a._key">
         <img
           v-if="a.imageUrl"
           :src="a.imageUrl"
@@ -21,16 +20,15 @@ const isWebsite = (href?: string) => /^https?:\/\//i.test(href ?? '')
         >
         <h3>{{ a.title }}</h3>
         <p>{{ a.body }}</p>
-        <template v-if="mode !== 'none' && a.cta?.label">
-          <NuxtLink v-if="isInternalHref(a.cta.href)" :to="a.cta.href" class="card-link">{{ a.cta.label }}</NuxtLink>
-          <a v-else-if="mode === 'cards' && isWebsite(a.cta.href)" :href="a.cta.href" v-bind="linkTarget(a.cta.href)" class="card-link">{{ a.cta.label }}</a>
-        </template>
+        <NuxtLink v-if="link?.internal" :to="link.href" class="card-link">{{ link.label }}</NuxtLink>
+        <a v-else-if="link" :href="link.href" v-bind="linkTarget(link.href)" class="card-link">
+          {{ link.label }}<span class="sr-only"> (opens in a new tab)</span>
+        </a>
       </article>
     </div>
-    <template v-if="mode === 'contact'">
-      <br></br>
-      <hr></hr>
-      <br></br>
+    <!-- Missing on grids saved before the setting existed, so only an explicit false hides it. -->
+    <template v-if="showContactButton !== false">
+      <hr class="divider">
       <a :href="`mailto:${email}`" class="btn">Contact us!</a>
     </template>
   </section>
@@ -72,4 +70,16 @@ const isWebsite = (href?: string) => /^https?:\/\//i.test(href ?? '')
 }
 .card-link:hover { opacity: 0.7; }
 .card-link:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+.divider { margin: 2.5rem 0; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 </style>

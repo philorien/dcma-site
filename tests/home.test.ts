@@ -99,12 +99,11 @@ describe('Home page', () => {
     expect(link.attributes('href')).toBe('/projects/full-hearts-fridge')
   })
 
-  it('shows no card link for other sites, email, unlabeled or protocol-relative CTAs', async () => {
+  it('skips card links with no label or a link the site can’t open', async () => {
     const w = await mountHomePage(makeHomePage({
       activities: [
-        makeCard({ _key: 'site', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
-        makeCard({ _key: 'mail', cta: { label: 'Get involved', href: 'mailto:a@b.co' } }),
         makeCard({ _key: 'proto', cta: { label: 'Sneaky', href: '//evil.example/page' } }),
+        makeCard({ _key: 'bare', cta: { label: 'Partner', href: 'partnerorg.com' } }),
         makeCard({ _key: 'nolabel', cta: { label: '', href: '/updates' } }),
       ],
     }))

@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare",
     "seed": "tsx scripts/seed.ts",
     "patch": "tsx scripts/patch.ts",
+    "patch:contact-button": "tsx scripts/patch-contact-button.ts",
     "test": "vitest run"
   },
   "dependencies": {

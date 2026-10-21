@@ -80,24 +80,19 @@ export const cardGridSection = defineType({
       initialValue: 'simple',
     }),
     defineField({
-      name: 'buttons',
-      type: 'string',
-      description: 'Contact button: links to site pages on cards, plus a contact button. Card links: every card link, including other websites, with no contact button. None: no buttons.',
-      options: {
-        list: [
-          { title: 'Contact button', value: 'contact' },
-          { title: 'Card links', value: 'cards' },
-          { title: 'None', value: 'none' },
-        ],
-      },
-      initialValue: 'contact',
+      name: 'showContactButton',
+      title: 'Show contact button',
+      type: 'boolean',
+      description: 'Adds a “Contact us!” email button under the cards. Turn off when the cards already have their own contact links.',
+      initialValue: true,
     }),
     defineField({ name: 'cards', type: 'array', of: [{ type: 'card' }], validation: (r) => r.min(1) }),
   ],
   preview: {
-    select: { title: 'heading', style: 'style' },
-    prepare({ title, style }) {
-      return { title: title || 'Card grid', subtitle: style === 'photos' ? 'With photos' : 'Simple cards' }
+    select: { title: 'heading', style: 'style', showContactButton: 'showContactButton' },
+    prepare({ title, style, showContactButton }) {
+      const kind = style === 'photos' ? 'With photos' : 'Simple cards'
+      return { title: title || 'Card grid', subtitle: showContactButton === false ? `${kind} · no contact button` : kind }
     },
   },
 })

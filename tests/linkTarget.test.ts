@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isInternalHref, linkTarget } from '../app/utils/linkTarget'
+import { isExternalUrl, isInternalHref, linkTarget } from '../app/utils/linkTarget'
 
 describe('linkTarget', () => {
   it('opens http(s) and mailto links in a new tab', () => {
@@ -33,5 +33,16 @@ describe('isInternalHref', () => {
     expect(isInternalHref('#find-fridge')).toBe(false)
     expect(isInternalHref('')).toBe(false)
     expect(isInternalHref(undefined)).toBe(false)
+  })
+})
+
+describe('isExternalUrl', () => {
+  it('accepts http(s) URLs only', () => {
+    expect(isExternalUrl('https://partner.example/')).toBe(true)
+    expect(isExternalUrl('HTTP://partner.example/')).toBe(true)
+    expect(isExternalUrl('//partner.example/')).toBe(false)
+    expect(isExternalUrl('mailto:a@b.co')).toBe(false)
+    expect(isExternalUrl('/updates')).toBe(false)
+    expect(isExternalUrl(undefined)).toBe(false)
   })
 })
