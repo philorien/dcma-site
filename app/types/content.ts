@@ -129,16 +129,14 @@ export interface ProseSection {
   body?: string
 }
 
-/** Which buttons a card grid shows. Missing (pre-field content) means 'contact'. */
-export type CardGridButtons = 'contact' | 'cards' | 'none'
-
 export interface CardGridSection {
   _key: string
   _type: 'cardGridSection'
   heading?: string
   intro?: string
   style?: 'simple' | 'photos'
-  buttons?: CardGridButtons
+  /** Null on grids saved before the field existed; treated as true. */
+  showContactButton?: boolean | null
   cards: Card[]
 }
 

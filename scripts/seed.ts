@@ -346,6 +346,7 @@ async function run() {
         _key: 's3', _type: 'cardGridSection',
         heading: 'ACTIVE PROJECTS',
         style: 'photos',
+        showContactButton: true,
         cards: [
           { _key: 'c1', _type: 'card', title: 'Full Hearts Fridge', body: 'We’re building a community fridge in Sturgeon Bay to cut food waste and get nourishing meals to neighbors — partnering with local restaurants, grocery stores, and farms. Volunteers needed for the build-out.', cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' }, image: imageField(photos.strawberryUnload) },
           { _key: 'c2', _type: 'card', title: 'Have an idea?', body: 'Bring it to a solidarity meeting. If it aligns with our principles and there are members who want to build it, we\'ll help get it off the ground.', cta: { label: 'GET IN TOUCH', href: '/contact' }, image: imageField(photos.handsJoined) },
@@ -361,6 +362,7 @@ async function run() {
         _key: 's5', _type: 'cardGridSection',
         heading: 'PARTNERS',
         style: 'default',
+        showContactButton: false,
         cards: [
           { _key: 'p1', _type: 'card', title: 'Northern Door Activism', body: 'Grassroots organizing for social and political change in northern Door County.', cta: { label: 'LEARN MORE', href: 'https://www.northerndooractivism.com/' } },
         ],
@@ -395,6 +397,7 @@ async function run() {
         heading: 'WAYS TO SHOW UP',
         intro: 'Pick what fits your time and capacity today.',
         style: 'simple',
+        showContactButton: false,
         cards: [
           { _key: 'c1', _type: 'card', title: 'Offer your time', body: 'Volunteer at the fridge, help with deliveries, or show up at a solidarity meeting.', cta: { label: 'EMAIL US', href: 'mailto:mutualaiddoorcounty@gmail.com?subject=Volunteer' } },
           { _key: 'c2', _type: 'card', title: 'Share supplies', body: 'Got extra food, clothing, tools, or household goods? The network can connect them with neighbors who need them.', cta: { label: 'OFFER SUPPLIES', href: 'mailto:mutualaiddoorcounty@gmail.com?subject=Offer%20Supplies' } },
@@ -458,6 +461,7 @@ async function run() {
         _key: 's3', _type: 'cardGridSection',
         heading: 'WHERE MONEY GOES',
         style: 'simple',
+        showContactButton: true,
         cards: [
           { _key: 'c1', _type: 'card', title: 'Direct Support', body: 'Food boxes, supply drives, emergency assistance — funds go directly to neighbors in need.' },
           { _key: 'c2', _type: 'card', title: 'Full Hearts Fridge', body: 'Refrigeration maintenance, food rescue coordination, and volunteer supplies.' },

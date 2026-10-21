@@ -34,7 +34,7 @@ const sectionFields = /* groq */ `
     eyebrow, heading, body
   },
   _type == "cardGridSection" => {
-    heading, intro, style, buttons,
+    heading, intro, style, showContactButton,
     cards[]{${cardFields}}
   },
   _type == "ctaSection" => {
