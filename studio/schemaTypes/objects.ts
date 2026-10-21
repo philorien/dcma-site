@@ -85,6 +85,17 @@ export const card = defineType({
     defineField({ name: 'title', type: 'string', validation: (r) => r.required() }),
     defineField({ name: 'body', type: 'text', rows: 3 }),
     imageField({ name: 'image', options: { hotspot: true } }),
-    defineField({ name: 'cta', type: 'cta' }),
+    defineField({
+      name: 'cta',
+      type: 'cta',
+      description: 'Cards only show links to pages on this site, like /updates.',
+      // Warn rather than block: the site silently drops anything else, so a
+      // pasted full URL would otherwise just make the button disappear.
+      validation: (r) => r.custom((cta?: { href?: string }) => {
+        const href = cta?.href
+        if (!href || (href.startsWith('/') && !href.startsWith('//'))) return true
+        return 'This link won’t show on the card. Use a path starting with /, like /projects/full-hearts-fridge.'
+      }).warning(),
+    }),
   ],
 })

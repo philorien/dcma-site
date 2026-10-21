@@ -18,7 +18,7 @@ defineProps<{ heading?: string; activities: Card[]; email: string; }>()
         >
         <h3>{{ a.title }}</h3>
         <p>{{ a.body }}</p>
-        <NuxtLink v-if="a.cta?.href?.startsWith('/')" :to="a.cta.href" class="card-link">{{ a.cta.label }}</NuxtLink>
+        <NuxtLink v-if="a.cta?.label && isInternalHref(a.cta.href)" :to="a.cta.href" class="card-link">{{ a.cta.label }}</NuxtLink>
       </article>
     </div>
     <br></br>
@@ -51,6 +51,7 @@ defineProps<{ heading?: string; activities: Card[]; email: string; }>()
 .items p { margin: 0; flex: 1; }
 .card-link {
   display: inline-block;
+  align-self: flex-start;
   margin-top: 0.25rem;
   font-size: 0.8rem;
   font-weight: 700;

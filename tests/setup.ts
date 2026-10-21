@@ -5,7 +5,7 @@
  */
 import * as vue from 'vue'
 import { config } from '@vue/test-utils'
-import { linkTarget } from '../app/utils/linkTarget'
+import { isInternalHref, linkTarget } from '../app/utils/linkTarget'
 
 // Vue Composition API (ref, computed, reactive, …) — Nuxt injects these globally
 Object.assign(globalThis, vue)
@@ -16,6 +16,7 @@ config.global.plugins = [
   {
     install(app: ReturnType<typeof vue.createApp>) {
       app.config.globalProperties.linkTarget = linkTarget
+      app.config.globalProperties.isInternalHref = isInternalHref
     },
   },
 ]

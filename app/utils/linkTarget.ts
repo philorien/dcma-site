@@ -6,3 +6,8 @@ export function linkTarget(href?: string | null) {
   }
   return {}
 }
+
+/** Root-relative link to a page on this site. `//host/path` is another site, not a path. */
+export function isInternalHref(href?: string | null): href is string {
+  return !!href && href.startsWith('/') && !href.startsWith('//')
+}
