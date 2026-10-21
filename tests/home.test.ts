@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import { makeCard, makeSettings } from './fixtures'
 import HomeHero from '../app/components/home/HomeHero.vue'
 import HomeActivityGrid from '../app/components/home/ActivityGrid.vue'
-import type { HomePage, Update } from '../app/types/content'
+import type { Card, HomePage, Update } from '../app/types/content'
 
 function makeHomePage(overrides?: Partial<HomePage>): HomePage {
   return {
@@ -97,6 +97,14 @@ describe('Home page', () => {
     const link = w.find('.card-link')
     expect(link.text()).toBe('LEARN MORE')
     expect(link.attributes('href')).toBe('/projects/full-hearts-fridge')
+  })
+
+  it('still renders when every activity card was deleted in Studio', async () => {
+    // Regression: Sanity sends null rather than [] for an emptied array.
+    const w = await mountHomePage(makeHomePage({ activities: null as unknown as Card[] }))
+
+    expect(w.text()).toContain('We show up for our neighbors')
+    expect(w.findAll('.card-link')).toHaveLength(0)
   })
 
   it('renders the latest update when one exists', async () => {

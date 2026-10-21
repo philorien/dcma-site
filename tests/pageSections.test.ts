@@ -9,7 +9,7 @@ import FridgeClosingCta from '../app/components/fridge/FridgeClosingCta.vue'
 import ContactSection from '../app/components/ContactSection.vue'
 import { makeCard, makeSettings } from './fixtures'
 import { DEFAULT_CONTACT_FORM } from '../app/utils/contentDefaults'
-import type { CardGridSection, PageSection } from '../app/types/content'
+import type { Card, CardGridSection, PageSection } from '../app/types/content'
 
 // This is the [slug].vue / projects/index.vue rendering path: sections come
 // straight from Sanity as untyped `_type`-tagged blobs, and this component's
@@ -142,5 +142,21 @@ describe('Card grid links and contact button', () => {
     expect(w.find('a.btn').exists()).toBe(shown)
     // Card links never depend on the switch, so the fridge link can't be hidden by it (#85).
     expect(w.findAll('.card-link')).toHaveLength(cards.length)
+  })
+
+  it('renders a grid whose cards were all deleted in Studio', () => {
+    // Regression: Sanity sends null rather than [] for an emptied array, and
+    // mapping over it threw during render, taking the whole page down.
+    const w = mount(PageSections, {
+      props: {
+        sections: [{ _key: 'grid', _type: 'cardGridSection', heading: 'PARTNERS', cards: null as unknown as Card[] }],
+        settings: makeSettings(),
+        contactForm: DEFAULT_CONTACT_FORM,
+      },
+      global: { components: { HomeActivityGrid } },
+    })
+
+    expect(w.find('h2').text()).toBe('PARTNERS')
+    expect(w.findAll('article')).toHaveLength(0)
   })
 })
