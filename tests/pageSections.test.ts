@@ -9,7 +9,7 @@ import FridgeClosingCta from '../app/components/fridge/FridgeClosingCta.vue'
 import ContactSection from '../app/components/ContactSection.vue'
 import { makeCard, makeSettings } from './fixtures'
 import { DEFAULT_CONTACT_FORM } from '../app/utils/contentDefaults'
-import type { PageSection } from '../app/types/content'
+import type { CardGridSection, PageSection } from '../app/types/content'
 
 // This is the [slug].vue / projects/index.vue rendering path: sections come
 // straight from Sanity as untyped `_type`-tagged blobs, and this component's
@@ -98,7 +98,7 @@ describe('Card grid links and contact button', () => {
   ]
   const mountGrid = (showContactButton?: boolean | null) => mount(PageSections, {
     props: {
-      sections: [{ _key: 'grid', _type: 'cardGridSection', showContactButton, cards } as PageSection],
+      sections: [{ _key: 'grid', _type: 'cardGridSection', showContactButton, cards } satisfies CardGridSection],
       settings: makeSettings(),
       contactForm: DEFAULT_CONTACT_FORM,
     },
@@ -141,6 +141,6 @@ describe('Card grid links and contact button', () => {
 
     expect(w.find('a.btn').exists()).toBe(shown)
     // Card links never depend on the switch, so the fridge link can't be hidden by it (#85).
-    expect(w.findAll('.card-link')).toHaveLength(3)
+    expect(w.findAll('.card-link')).toHaveLength(cards.length)
   })
 })

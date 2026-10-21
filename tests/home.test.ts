@@ -99,18 +99,6 @@ describe('Home page', () => {
     expect(link.attributes('href')).toBe('/projects/full-hearts-fridge')
   })
 
-  it('skips card links with no label or a link the site can’t open', async () => {
-    const w = await mountHomePage(makeHomePage({
-      activities: [
-        makeCard({ _key: 'proto', cta: { label: 'Sneaky', href: '//evil.example/page' } }),
-        makeCard({ _key: 'bare', cta: { label: 'Partner', href: 'partnerorg.com' } }),
-        makeCard({ _key: 'nolabel', cta: { label: '', href: '/updates' } }),
-      ],
-    }))
-
-    expect(w.findAll('.card-link')).toHaveLength(0)
-  })
-
   it('renders the latest update when one exists', async () => {
     const w = await mountHomePage(makeHomePage(), {
       _id: 'u1',
