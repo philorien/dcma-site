@@ -9,7 +9,7 @@ import FridgeClosingCta from '../app/components/fridge/FridgeClosingCta.vue'
 import ContactSection from '../app/components/ContactSection.vue'
 import { makeCard, makeSettings } from './fixtures'
 import { DEFAULT_CONTACT_FORM } from '../app/utils/contentDefaults'
-import type { PageSection } from '../app/types/content'
+import type { CardGridSection, PageSection } from '../app/types/content'
 
 // This is the [slug].vue / projects/index.vue rendering path: sections come
 // straight from Sanity as untyped `_type`-tagged blobs, and this component's
@@ -87,6 +87,47 @@ describe('PageSections', () => {
     ])
 
     expect(w.text()).toBe('')
+  })
+})
+
+describe('Card grid buttons', () => {
+  const grid = (buttons?: CardGridSection['buttons']): PageSection => ({
+    _key: 'grid', _type: 'cardGridSection', buttons,
+    cards: [
+      makeCard({ _key: 'page', title: 'Fridge', cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' } }),
+      makeCard({ _key: 'site', title: 'Partner', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
+      makeCard({ _key: 'mail', title: 'Volunteer', cta: { label: 'Get involved', href: 'mailto:a@b.co' } }),
+    ],
+  })
+  const mountGrid = (buttons?: CardGridSection['buttons']) => mount(PageSections, {
+    props: { sections: [grid(buttons)], settings: makeSettings(), contactForm: DEFAULT_CONTACT_FORM },
+    global: {
+      components: { HomeActivityGrid },
+      stubs: { NuxtLink: { template: '<a><slot /></a>' } },
+    },
+  })
+  const labels = (w: ReturnType<typeof mountGrid>) => w.findAll('.card-link').map((a) => a.text())
+
+  it('defaults to site-page card links plus the contact button when unset', () => {
+    const w = mountGrid(undefined)
+
+    expect(labels(w)).toEqual(['LEARN MORE'])
+    expect(w.find('a.btn').text()).toBe('Contact us!')
+  })
+
+  it('"cards" shows website links in a new tab and drops the contact button', () => {
+    const w = mountGrid('cards')
+
+    expect(labels(w)).toEqual(['LEARN MORE', 'Visit website'])
+    expect(w.find('a[href="https://partner.example/"]').attributes('target')).toBe('_blank')
+    expect(w.find('a.btn').exists()).toBe(false)
+  })
+
+  it('"none" shows no buttons at all', () => {
+    const w = mountGrid('none')
+
+    expect(labels(w)).toEqual([])
+    expect(w.find('a.btn').exists()).toBe(false)
   })
 })
 

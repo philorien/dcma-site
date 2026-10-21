@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import type { Card } from '~/types/content'
+import type { Card, CardGridButtons } from '~/types/content'
 const headingId = useId()
-defineProps<{ heading?: string; activities: Card[]; email: string; }>()
+const props = defineProps<{ heading?: string; activities: Card[]; email: string; buttons?: CardGridButtons }>()
+// Content saved before the field existed has no value; treat it as the default.
+const mode = computed(() => props.buttons ?? 'contact')
+const isWebsite = (href?: string) => /^https?:\/\//i.test(href ?? '')
 </script>
 
 <template>
@@ -18,13 +21,18 @@ defineProps<{ heading?: string; activities: Card[]; email: string; }>()
         >
         <h3>{{ a.title }}</h3>
         <p>{{ a.body }}</p>
-        <NuxtLink v-if="a.cta?.label && isInternalHref(a.cta.href)" :to="a.cta.href" class="card-link">{{ a.cta.label }}</NuxtLink>
+        <template v-if="mode !== 'none' && a.cta?.label">
+          <NuxtLink v-if="isInternalHref(a.cta.href)" :to="a.cta.href" class="card-link">{{ a.cta.label }}</NuxtLink>
+          <a v-else-if="mode === 'cards' && isWebsite(a.cta.href)" :href="a.cta.href" v-bind="linkTarget(a.cta.href)" class="card-link">{{ a.cta.label }}</a>
+        </template>
       </article>
     </div>
-    <br></br>
-    <hr></hr>
-    <br></br>
-    <a :href="`mailto:${email}`" class="btn">Contact us!</a>
+    <template v-if="mode === 'contact'">
+      <br></br>
+      <hr></hr>
+      <br></br>
+      <a :href="`mailto:${email}`" class="btn">Contact us!</a>
+    </template>
   </section>
 </template>
 
