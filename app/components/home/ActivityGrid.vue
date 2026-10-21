@@ -2,8 +2,9 @@
 import type { Card } from '~/types/content'
 import { cardLink } from '~/utils/cardLink'
 const headingId = useId()
-const props = defineProps<{ heading?: string; activities: Card[]; email: string; showContactButton?: boolean | null }>()
-const cards = computed(() => props.activities.map((card) => ({ card, link: cardLink(card) })))
+// Sanity sends null, not [], once an editor deletes every card.
+const props = defineProps<{ heading?: string; activities: Card[] | null; email: string; showContactButton?: boolean | null }>()
+const cards = computed(() => (props.activities ?? []).map((card) => ({ card, link: cardLink(card) })))
 </script>
 
 <template>
