@@ -83,6 +83,19 @@ describe('Home page', () => {
     expect(w.findAll('.hero .actions a')).toHaveLength(1)
   })
 
+  it('links a card to its internal page so /projects/full-hearts-fridge stays reachable', async () => {
+    // Regression (#85): card CTA links were removed in favor of the single
+    // contact button, leaving the fridge page with no way in from the site.
+    const w = await mountHomePage(makeHomePage({
+      activities: [makeCard({
+        title: 'Full Hearts Fridge',
+        cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' },
+      })],
+    }))
+
+    expect(w.find('.card-link').text()).toBe('LEARN MORE')
+  })
+
   it('renders the latest update when one exists', async () => {
     const w = await mountHomePage(makeHomePage(), {
       _id: 'u1',

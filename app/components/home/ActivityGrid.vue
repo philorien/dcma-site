@@ -18,6 +18,7 @@ defineProps<{ heading?: string; activities: Card[]; email: string; }>()
         >
         <h3>{{ a.title }}</h3>
         <p>{{ a.body }}</p>
+        <NuxtLink v-if="a.cta?.href?.startsWith('/')" :to="a.cta.href" class="card-link">{{ a.cta.label }}</NuxtLink>
       </article>
     </div>
     <br></br>
