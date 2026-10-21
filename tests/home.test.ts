@@ -56,7 +56,8 @@ async function mountHomePage(homePage: HomePage | null, latestUpdate: Update | n
     {
       global: {
         components: { HomeHero, HomeActivityGrid },
-        stubs: { NuxtLink: { template: '<a><slot /></a>' } },
+        // Renders `to` as href so tests can assert where card links go.
+        stubs: { NuxtLink: { props: ['to'], template: '<a :href="to"><slot /></a>' } },
       },
     },
   )
@@ -93,7 +94,22 @@ describe('Home page', () => {
       })],
     }))
 
-    expect(w.find('.card-link').text()).toBe('LEARN MORE')
+    const link = w.find('.card-link')
+    expect(link.text()).toBe('LEARN MORE')
+    expect(link.attributes('href')).toBe('/projects/full-hearts-fridge')
+  })
+
+  it('shows no card link for other sites, email, unlabeled or protocol-relative CTAs', async () => {
+    const w = await mountHomePage(makeHomePage({
+      activities: [
+        makeCard({ _key: 'site', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
+        makeCard({ _key: 'mail', cta: { label: 'Get involved', href: 'mailto:a@b.co' } }),
+        makeCard({ _key: 'proto', cta: { label: 'Sneaky', href: '//evil.example/page' } }),
+        makeCard({ _key: 'nolabel', cta: { label: '', href: '/updates' } }),
+      ],
+    }))
+
+    expect(w.findAll('.card-link')).toHaveLength(0)
   })
 
   it('renders the latest update when one exists', async () => {

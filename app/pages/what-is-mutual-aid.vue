@@ -6,10 +6,6 @@ useSeoMeta({
   description: () => page.value?.seo.description,
 })
 
-function isInternal(href: string) {
-  return href.startsWith('/')
-}
-
 const difficultyClass = (level: string) => `pill pill-${level.toLowerCase()}`
 
 // Italicize book titles from the reading list where they're named in the prose.
@@ -46,7 +42,7 @@ const withCitedBooks = (text: string) => citeBookTitles(text, bookTitles.value)
         </ul>
         <p>{{ page.looksLikeOutro }}</p>
         <NuxtLink
-          v-if="page.looksLikeCta && isInternal(page.looksLikeCta.href)"
+          v-if="page.looksLikeCta && isInternalHref(page.looksLikeCta.href)"
           :to="page.looksLikeCta.href"
           class="inline-link"
         >{{ page.looksLikeCta.label }}</NuxtLink>
@@ -62,7 +58,7 @@ const withCitedBooks = (text: string) => citeBookTitles(text, bookTitles.value)
         <h2 id="organized-h">{{ page.organizedHeading }}</h2>
         <p v-for="(para, i) in page.organizedParagraphs" :key="i">{{ para }}</p>
         <NuxtLink
-          v-if="page.securityCta && isInternal(page.securityCta.href)"
+          v-if="page.securityCta && isInternalHref(page.securityCta.href)"
           :to="page.securityCta.href"
           class="inline-link"
         >{{ page.securityCta.label }}</NuxtLink>
@@ -108,7 +104,7 @@ const withCitedBooks = (text: string) => citeBookTitles(text, bookTitles.value)
 
         <p>{{ page.readingClosing }}</p>
         <NuxtLink
-          v-if="page.readingCta && isInternal(page.readingCta.href)"
+          v-if="page.readingCta && isInternalHref(page.readingCta.href)"
           :to="page.readingCta.href"
           class="inline-link"
         >{{ page.readingCta.label }}</NuxtLink>

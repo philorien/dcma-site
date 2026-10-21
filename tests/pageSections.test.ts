@@ -89,3 +89,28 @@ describe('PageSections', () => {
     expect(w.text()).toBe('')
   })
 })
+
+describe('Card grid links on CMS pages', () => {
+  it('links cards to site pages on the /projects rendering path', () => {
+    const w = mount(PageSections, {
+      props: {
+        sections: [{
+          _key: 'grid', _type: 'cardGridSection',
+          cards: [
+            makeCard({ _key: 'page', cta: { label: 'LEARN MORE', href: '/projects/full-hearts-fridge' } }),
+            makeCard({ _key: 'site', cta: { label: 'Visit website', href: 'https://partner.example/' } }),
+          ],
+        }],
+        settings: makeSettings(),
+        contactForm: DEFAULT_CONTACT_FORM,
+      },
+      global: {
+        components: { HomeActivityGrid },
+        stubs: { NuxtLink: { props: ['to'], template: '<a :href="to"><slot /></a>' } },
+      },
+    })
+
+    const links = w.findAll('.card-link')
+    expect(links.map((a) => a.attributes('href'))).toEqual(['/projects/full-hearts-fridge'])
+  })
+})

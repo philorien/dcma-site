@@ -2,10 +2,6 @@
 import type { SiteSettings } from '~/types/content'
 defineProps<{ settings: SiteSettings }>()
 
-function isInternal(href: string) {
-  return href.startsWith('/')
-}
-
 // Mobile nav drawer. Below the breakpoint the nav is an off-canvas panel that
 // is hidden (visibility) until opened; above it these refs are inert.
 const MOBILE_QUERY = '(max-width: 768px)'
@@ -120,14 +116,14 @@ onBeforeUnmount(() => {
           </span>
           <ul class="dropdown-menu" role="list">
             <li v-for="child in link.children" :key="child.href">
-              <NuxtLink v-if="child.href && isInternal(child.href)" :to="child.href">{{ child.label }}</NuxtLink>
+              <NuxtLink v-if="isInternalHref(child.href)" :to="child.href">{{ child.label }}</NuxtLink>
               <a v-else-if="child.href" :href="child.href" v-bind="linkTarget(child.href)">{{ child.label }}</a>
             </li>
           </ul>
         </div>
 
         <!-- Plain top-level link -->
-        <NuxtLink v-else-if="link.href && isInternal(link.href)" :to="link.href">{{ link.label }}</NuxtLink>
+        <NuxtLink v-else-if="isInternalHref(link.href)" :to="link.href">{{ link.label }}</NuxtLink>
         <a v-else-if="link.href" :href="link.href" v-bind="linkTarget(link.href)">{{ link.label }}</a>
       </template>
     </nav>
