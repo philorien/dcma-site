@@ -88,13 +88,20 @@ export const card = defineType({
     defineField({
       name: 'cta',
       type: 'cta',
-      description: 'Cards only show links to pages on this site, like /updates.',
+      description: 'Cards show links to pages on this site, like /updates. Links to other websites only show when the grid’s Buttons is set to Card links. Email links never show.',
       // Warn rather than block: the site silently drops anything else, so a
       // pasted full URL would otherwise just make the button disappear.
-      validation: (r) => r.custom((cta?: { href?: string }) => {
+      validation: (r) => r.custom((cta: { href?: string } | undefined, context) => {
         const href = cta?.href
         if (!href || (href.startsWith('/') && !href.startsWith('//'))) return true
-        return 'This link won’t show on the card. Use a path starting with /, like /projects/full-hearts-fridge.'
+        if (/^https?:\/\//i.test(href)) {
+          // Path is ['sections', { _key }, 'cards', { _key }, 'cta'] inside a card grid.
+          const gridKey = (context.path?.[1] as { _key?: string } | undefined)?._key
+          const sections = (context.document?.sections ?? []) as { _key: string; buttons?: string }[]
+          if (sections.find((s) => s._key === gridKey)?.buttons === 'cards') return true
+          return 'This link only shows when the grid’s Buttons is set to Card links. For a page on this site, use a path like /projects/full-hearts-fridge.'
+        }
+        return 'This link won’t show on the card. Use a path starting with /, or a website starting with https://.'
       }).warning(),
     }),
   ],

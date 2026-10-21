@@ -41,6 +41,7 @@ defineProps<{
       v-else-if="section._type === 'cardGridSection'"
       :heading="section.heading"
       :activities="section.cards"
+      :buttons="section.buttons"
       :email="settings.email"
     />
 
