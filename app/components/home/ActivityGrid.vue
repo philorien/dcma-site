@@ -26,7 +26,6 @@ const cards = computed(() => props.activities.map((card) => ({ card, link: cardL
         </a>
       </article>
     </div>
-    <!-- Missing on grids saved before the setting existed, so only an explicit false hides it. -->
     <template v-if="showContactButton !== false">
       <hr class="divider">
       <a :href="`mailto:${email}`" class="btn">Contact us!</a>
