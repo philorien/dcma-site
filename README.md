@@ -343,6 +343,18 @@ Then run **Deploy Studio** from the **Actions** tab. Once it passes, delete the 
 
 ---
 
+## License
+
+The code in this repository is released under the [MIT License](LICENSE).
+
+The license covers the code only. It does not cover:
+
+- The Door County Mutual Aid name, the handprint logo, and other brand assets (`assets/source/`). If you fork this project, use your own name and branding.
+- The site copy and content published through Sanity.
+- Stock photography in `assets/stock/`, which comes from [Unsplash](https://unsplash.com/license) and is subject to its own license.
+
+---
+
 ## Links
 
 - [Nuxt documentation](https://nuxt.com/docs)
