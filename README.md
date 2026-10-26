@@ -256,6 +256,11 @@ The contact endpoint (`server/api/contact.post.ts`) writes `contactSubmission` d
 
 Token needs **create** permission on `contactSubmission` documents.
 
+The endpoint rejects declared request bodies over 16 KiB and limits each text
+field. It also allows five submissions per IP every 15 minutes. The limiter is
+in-memory and per server instance, so it is best-effort on serverless hosting;
+for a hard cross-instance limit, use a shared rate-limit store.
+
 ### Invite a new editor
 
 1. Go to [sanity.io/manage](https://www.sanity.io/manage) → project **Door County Mutual Aid**.
